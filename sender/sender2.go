@@ -13,39 +13,32 @@ func main() {
 		fmt.Println("Failed Initializing Broker Connection")
 		panic(err)
 	}
-	fmt.Println("RabbitMQ running")
-	// Let's start by opening a channel to our RabbitMQ instance
-	// over the connection we have already established
+	fmt.Println("sender direct running")
 	ch, err := conn.Channel()
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare(
-		"TestQueue",
-		false,
-		false,
-		false,
-		false,
-		nil,
+	err = ch.ExchangeDeclare(
+		"sender2", // name
+		"direct",  // type
+		true,      // durable
+		false,     // auto-deleted
+		false,     // internal
+		false,     // no-wait
+		nil,       // arguments
 	)
 
-	fmt.Println(q)
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	message := Message{
+	message := Message2{
 		Name:  "vanhung",
 		Age:   10,
 		Email: "vanhung@gmail.com",
 	}
 	emessage, _ := json.Marshal(message)
 	err = ch.Publish(
-		"",
-		"TestQueue",
+		"sender2",
+		"vanhung",
 		false,
 		false,
 		amqp.Publishing{
@@ -60,7 +53,7 @@ func main() {
 	fmt.Println("Successfully Published Message to Queue")
 }
 
-type Message struct {
+type Message2 struct {
 	Name  string
 	Age   int
 	Email string

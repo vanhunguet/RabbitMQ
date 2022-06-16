@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Consumer1 running")
+	fmt.Println("fanout running")
 	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		fmt.Println("Failed Initializing Broker Connection")
@@ -19,18 +19,41 @@ func main() {
 	}
 	defer ch.Close()
 
-	if err != nil {
-		fmt.Println(err)
-	}
+	err = ch.ExchangeDeclare(
+		"sender1", // name
+		"fanout",  // type
+		true,      // durable
+		false,     // auto-deleted
+		false,     // internal
+		false,     // no-wait
+		nil,       // arguments
+	)
 
-	msgs, err := ch.Consume(
-		"",
-		"",
-		true,
-		false,
-		false,
+	q, _ := ch.QueueDeclare(
+		"",    // name
+		false, // durable
+		false, // delete when unused
+		true,  // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+
+	err = ch.QueueBind(
+		q.Name,    // queue name
+		"",        // routing key
+		"sender1", // exchange
 		false,
 		nil,
+	)
+
+	msgs, err := ch.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
 	)
 
 	forever := make(chan bool)
