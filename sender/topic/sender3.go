@@ -38,7 +38,7 @@ func main() {
 	emessage, _ := json.Marshal(message)
 	err = ch.Publish(
 		"sender3",
-		"vanhung",
+		"vanhung.abc.ad",
 		false,
 		false,
 		amqp.Publishing{
